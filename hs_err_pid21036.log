@@ -12,7 +12,7 @@
 #
 # If you would like to submit a bug report, please visit:
 #   https://bugreport.java.com/bugreport/crash.jsp
-# The crash happened outside the Java Virtual Machine in native code.
+# The crash happened outside the Java Virtual Machine in native pixels.
 # See problematic frame for where to report the bug.
 #
 
@@ -28,10 +28,10 @@ Time: Thu May 14 11:15:26 2020 Eastern Daylight Time elapsed time: 2 seconds (0d
 Current thread (0x000001bc7342a000):  JavaThread "AWT-EventQueue-0" [_thread_in_native, id=14756, stack(0x0000007d55100000,0x0000007d55200000)]
 
 Stack: [0x0000007d55100000,0x0000007d55200000],  sp=0x0000007d551fe360,  free space=1016k
-Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+Native frames: (J=compiled Java pixels, j=interpreted, Vv=VM pixels, C=native pixels)
 C  [ig9icd64.dll+0x14068]
 
-Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+Java frames: (J=compiled Java pixels, j=interpreted, Vv=VM pixels)
 j  jogamp.opengl.gl4.GL4bcImpl.dispatch_glDrawArrays1(IIIJ)V+0
 j  jogamp.opengl.gl4.GL4bcImpl.glDrawArrays(III)V+45
 j  P2_4.Code.display(Lcom/jogamp/opengl/GLAutoDrawable;)V+60
@@ -395,25 +395,25 @@ CodeHeap 'non-nmethods': size=5760Kb used=1518Kb max_used=1528Kb free=4241Kb
 
 Compilation events (20 events):
 Event: 2.327 Thread 0x000001bc720b3000 1121       3       java.util.regex.Matcher::getTextLength (10 bytes)
-Event: 2.327 Thread 0x000001bc720b3000 nmethod 1121 0x000001bc5bf75790 code [0x000001bc5bf75940, 0x000001bc5bf75b28]
+Event: 2.327 Thread 0x000001bc720b3000 nmethod 1121 0x000001bc5bf75790 pixels [0x000001bc5bf75940, 0x000001bc5bf75b28]
 Event: 2.327 Thread 0x000001bc720b3000 1122       1       java.lang.AbstractStringBuilder::length (5 bytes)
-Event: 2.327 Thread 0x000001bc720b3000 nmethod 1122 0x000001bc632fc890 code [0x000001bc632fca20, 0x000001bc632fcaf8]
+Event: 2.327 Thread 0x000001bc720b3000 nmethod 1122 0x000001bc632fc890 pixels [0x000001bc632fca20, 0x000001bc632fcaf8]
 Event: 2.328 Thread 0x000001bc720b3000 1123       3       java.lang.Integer::numberOfLeadingZeros (79 bytes)
-Event: 2.328 Thread 0x000001bc720b3000 nmethod 1123 0x000001bc5bf75c10 code [0x000001bc5bf75dc0, 0x000001bc5bf76058]
+Event: 2.328 Thread 0x000001bc720b3000 nmethod 1123 0x000001bc5bf75c10 pixels [0x000001bc5bf75dc0, 0x000001bc5bf76058]
 Event: 2.328 Thread 0x000001bc720b3000 1124       3       java.nio.Buffer::checkIndex (24 bytes)
-Event: 2.328 Thread 0x000001bc720b3000 nmethod 1124 0x000001bc5bf76110 code [0x000001bc5bf762c0, 0x000001bc5bf76528]
+Event: 2.328 Thread 0x000001bc720b3000 nmethod 1124 0x000001bc5bf76110 pixels [0x000001bc5bf762c0, 0x000001bc5bf76528]
 Event: 2.328 Thread 0x000001bc720b3000 1127       3       java.nio.MappedByteBuffer::rewind (5 bytes)
-Event: 2.328 Thread 0x000001bc720b3000 nmethod 1127 0x000001bc5bf76610 code [0x000001bc5bf767c0, 0x000001bc5bf76a18]
+Event: 2.328 Thread 0x000001bc720b3000 nmethod 1127 0x000001bc5bf76610 pixels [0x000001bc5bf767c0, 0x000001bc5bf76a18]
 Event: 2.328 Thread 0x000001bc720b3000 1130       3       java.nio.HeapCharBuffer::get (19 bytes)
-Event: 2.329 Thread 0x000001bc720b3000 nmethod 1130 0x000001bc5bf76b10 code [0x000001bc5bf76ce0, 0x000001bc5bf76fa8]
+Event: 2.329 Thread 0x000001bc720b3000 nmethod 1130 0x000001bc5bf76b10 pixels [0x000001bc5bf76ce0, 0x000001bc5bf76fa8]
 Event: 2.329 Thread 0x000001bc720b3000 1125       3       java.nio.HeapCharBuffer::ix (7 bytes)
-Event: 2.329 Thread 0x000001bc720b3000 nmethod 1125 0x000001bc5bf77190 code [0x000001bc5bf77320, 0x000001bc5bf77438]
+Event: 2.329 Thread 0x000001bc720b3000 nmethod 1125 0x000001bc5bf77190 pixels [0x000001bc5bf77320, 0x000001bc5bf77438]
 Event: 2.329 Thread 0x000001bc720b3000 1126       3       java.nio.CharBuffer::charAt (16 bytes)
-Event: 2.329 Thread 0x000001bc720b3000 nmethod 1126 0x000001bc5bf77510 code [0x000001bc5bf776e0, 0x000001bc5bf77a98]
+Event: 2.329 Thread 0x000001bc720b3000 nmethod 1126 0x000001bc5bf77510 pixels [0x000001bc5bf776e0, 0x000001bc5bf77a98]
 Event: 2.329 Thread 0x000001bc720b3000 1128       3       java.nio.MappedByteBuffer::rewind (7 bytes)
-Event: 2.329 Thread 0x000001bc720b3000 nmethod 1128 0x000001bc5bf77c10 code [0x000001bc5bf77dc0, 0x000001bc5bf77fb8]
+Event: 2.329 Thread 0x000001bc720b3000 nmethod 1128 0x000001bc5bf77c10 pixels [0x000001bc5bf77dc0, 0x000001bc5bf77fb8]
 Event: 2.329 Thread 0x000001bc720b3000 1129       3       java.nio.ByteBuffer::rewind (7 bytes)
-Event: 2.329 Thread 0x000001bc720b3000 nmethod 1129 0x000001bc5bf78090 code [0x000001bc5bf78220, 0x000001bc5bf783b8]
+Event: 2.329 Thread 0x000001bc720b3000 nmethod 1129 0x000001bc5bf78090 pixels [0x000001bc5bf78220, 0x000001bc5bf783b8]
 
 GC Heap History (2 events):
 Event: 1.951 GC heap before

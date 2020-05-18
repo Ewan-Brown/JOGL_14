@@ -1,9 +1,9 @@
-package P4_1;
+package P4_1_Revised;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLCanvas;
-import errorutils.ErrorUtils;
+import com.jogamp.opengl.util.FPSAnimator;
 import graphicslib3D.GLSLUtils;
 import graphicslib3D.Matrix3D;
 
@@ -34,16 +34,23 @@ public class Code extends JFrame implements GLEventListener {
     //The 'entry' point for this code
     public static void main(String[] args) {
         //Calls the constructor below
-        new Code();
+//        new Game(20);
+        new Code(30);
+//        new Game(40);
+        new Code(60);
+        new Code(75);
+
     }
 
-    public Code(){
-        setTitle("4.1");
+    public Code(int fps){
+        setTitle("4.1 Revised " + fps);
         setSize(600,600);
         myCanvas = new GLCanvas();
         myCanvas.addGLEventListener(this);
         this.add(myCanvas);
         setVisible(true);
+        FPSAnimator animator = new FPSAnimator(myCanvas, fps);
+        animator.start();
     }
 
     public void init(GLAutoDrawable drawable){
@@ -75,12 +82,21 @@ public class Code extends JFrame implements GLEventListener {
     public void display(GLAutoDrawable drawable){
         GL4 gl = (GL4) GLContext.getCurrentGL();
         gl.glClear(GL_DEPTH_BUFFER_BIT);
+        float bkg[] = {0.0f,0.0f,0.0f,1.0f};
+        FloatBuffer bkgBuffer = Buffers.newDirectFloatBuffer(bkg);
+        gl.glClearBufferfv(GL2ES3.GL_COLOR,0,bkgBuffer);
         gl.glUseProgram(rendering_program);
+
+        double t = (double)System.currentTimeMillis() / 10000.0d;
 
         Matrix3D vMat = new Matrix3D();
         vMat.translate(-cameraX,-cameraY,-cameraZ);
         Matrix3D mMat = new Matrix3D();
-        mMat.translate(cubeLocX,cubeLocY,cubeLocZ);
+//        mMat.translate(cubeLocX,cubeLocY,cubeLocZ);
+        mMat.translate(Math.sin(300*t) * 2.0, Math.sin(300*t) * 2.0, 0);
+//        mMat.rotate(1500*t,1500*t,1500*t);
+
+        mMat.scale(1.5,1.5,1.5);
 
         Matrix3D mvMat = new Matrix3D();
         mvMat.concatenate(vMat);
@@ -131,8 +147,8 @@ public class Code extends JFrame implements GLEventListener {
         int[] fragCompiled = new int[1];
 
         //Read from files
-        String vShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P4_1\\cube_vert.shader");
-        String fShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P4_1\\cube_frag.shader");
+        String vShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P4_1_Revised\\cube_vert.shader");
+        String fShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P4_1_Revised\\cube_frag.shader");
 
 
         //Load and compile shaders

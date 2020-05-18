@@ -1,4 +1,4 @@
-package P4_1_modified;
+package DexTest;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.*;
@@ -37,7 +37,7 @@ public class Code extends JFrame implements GLEventListener {
         new Code();
     }
 
-    //Constructor creating an object of type "Code" which is really just a JFrame with light additions (as defined by the "Code extends JFrame")
+    //Constructor creating an object of type "Game" which is really just a JFrame with light additions (as defined by the "Game extends JFrame")
     public Code(){
 
         //Some general window settings
@@ -46,9 +46,9 @@ public class Code extends JFrame implements GLEventListener {
         myCanvas = new GLCanvas();
         //Allows the canvas to receive calls from OpenGL upon things like window resizing and when the user tabs out of the window
         myCanvas.addGLEventListener(this);
-        //Adds the canvas to "this" - being the 'Code' Object
+        //Adds the canvas to "this" - being the 'Game' Object
         this.add(myCanvas);
-        //Makes the 'Code'-window visible and does lots of magic. This is where openGL is initialized i believe
+        //Makes the 'Game'-window visible and does lots of magic. This is where openGL is initialized i believe
         setVisible(true);
     }
 
@@ -111,7 +111,7 @@ public class Code extends JFrame implements GLEventListener {
         FloatBuffer vertBuff = Buffers.newDirectFloatBuffer(vertex_positions);
         gl.glBufferData(GL_ARRAY_BUFFER, vertBuff.limit()*4, vertBuff, GL_STATIC_DRAW);
     }
-    //Takes the vert.shader and frag.shader files, reads, compiles them then places them into rendering_program
+    //Takes the cube_vert.shader and cube_frag.shader files, reads, compiles them then places them into rendering_program
     //Yes rendering_program is an integer, but it's really a pointer value that points to the real rendering program object(or struct i guess) in openGL
     private int createShaderProgram() {
         GL4 gl = (GL4) GLContext.getCurrentGL();
@@ -120,8 +120,8 @@ public class Code extends JFrame implements GLEventListener {
         int[] fragCompiled = new int[1];
 
         //Read from files
-        String vShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P4_1_modified\\vert.shader");
-        String fShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P4_1_modified\\frag.shader");
+        String vShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\DexTest\\cube_vert.shader");
+        String fShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\DexTest\\cube_frag.shader");
 
 
         //Load and compile shaders

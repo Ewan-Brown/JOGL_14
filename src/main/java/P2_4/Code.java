@@ -79,9 +79,9 @@ public class Code extends JFrame implements GLEventListener {
     private int createShaderProgram() {
         GL4 gl = (GL4) GLContext.getCurrentGL();
 
-        String vShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P2_4\\vert.shader");
+        String vShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P2_4\\cube_vert.shader");
 
-        String fShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P2_4\\frag.shader");
+        String fShaderSource[] = readShaderSource("C:\\Users\\Ewan\\IdeaProjects\\JOGL_14\\src\\main\\java\\P2_4\\cube_frag.shader");
 
         int vShader = gl.glCreateShader(GL2ES2.GL_VERTEX_SHADER);
         gl.glShaderSource(vShader,vShaderSource.length,vShaderSource,null,0);

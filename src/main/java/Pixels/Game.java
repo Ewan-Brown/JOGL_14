@@ -17,7 +17,6 @@ import java.util.*;
 
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES2.GL_COMPILE_STATUS;
-import static com.jogamp.opengl.GL2GL3.GL_FILL;
 import static com.jogamp.opengl.GL2GL3.GL_LINE;
 
 
@@ -34,29 +33,63 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
     private float rotX, rotY, rotZ;
     private GLSLUtils util = new GLSLUtils();
     private Matrix3D pMat;
-    private BitSet keySet = new BitSet(256);
+    public static BitSet keySet = new BitSet(256);
     ArrayList<Pixel> pixels = new ArrayList<Pixel>();
-    int pixelCount = 100;
+    int pixelCount = 10000;
     Random rand = new Random();
 
     //The 'entry' point for this code
     public static void main(String[] args) {
         //Calls the constructor below
         Game game = new Game();
-//        new Thread(() -> {
-//            while(true) {
-//                pixels.doInput();
-//            }
-//        }).start();
+        new Thread(() -> {
+            while(true) {
+                try {
+                    Thread.sleep(8);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                game.updatePixels();
+            }
+        }).start();
     }
 
+    public void updatePixels(){
+        for(Pixel p : pixels){
+            p.update();
+            if(Math.abs(p.x) > 1) {
+                p.speedX = -p.speedX;
+                p.x += p.speedX;
+            }
+            if(Math.abs(p.y) > 1) {
+                p.speedY = -p.speedY;
+                p.y += p.speedY;
+            }
+            if(Math.abs(p.z) > 1) {
+                p.speedZ = -p.speedZ;
+                p.z += p.speedZ;
+            }
+        }
+    }
+    public void pull(float x, float y, float z, float force){
+
+    }
     public void initializePixels(){
         for(int i = 0; i < pixelCount; i++){
             Pixel p = new Pixel(
-                    (float)rand.nextInt(2) - 1,
-                    (float)rand.nextInt(2) - 1,
-                    (float)rand.nextInt(2) - 1
+                    rand.nextFloat()*2 - 1,
+                    rand.nextFloat()*2 - 1,
+                    rand.nextFloat()*2 - 1
             );
+            p.speedX = (rand.nextFloat()*2 - 1) / 200f;
+            p.speedY = (rand.nextFloat()*2 - 1) / 200f;
+            p.speedZ = (rand.nextFloat()*2 - 1) / 200f;
+
+            p.rotSpeedX = (rand.nextFloat()*2 - 1);
+            p.rotSpeedY = (rand.nextFloat()*2 - 1);
+            p.rotSpeedZ = (rand.nextFloat()*2 - 1);
+
+            System.out.println(p.x);
             pixels.add(p);
         }
     }
@@ -126,14 +159,10 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
         Matrix3D vMat = new Matrix3D();
         vMat.translate(-cameraX,-cameraY,-cameraZ);
         vMat.rotate(rotX, rotY, rotZ);
-        Matrix3D mMat = new Matrix3D();
-        mMat.translate(cubeLocX,cubeLocY,cubeLocZ);
 
         //Concat matrices
         Matrix3D mvMat = new Matrix3D();
         mvMat.concatenate(vMat);
-        mvMat.concatenate(mMat);
-        mvMat.scale(0.1,0.1,0.1);
 
         //Connect these to uniform vars that the shaders can use
         int mv_loc = gl.glGetUniformLocation(rendering_program, "mv_matrix");
@@ -150,6 +179,38 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
         gl.glDepthFunc(GL_LEQUAL);
         gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         gl.glDrawArrays(GL_TRIANGLES, 0 ,36);
+
+
+        //PART 2 ==========================================
+        for(Pixel p : pixels) {
+            vMat = new Matrix3D();
+            vMat.translate(-cameraX, -cameraY, -cameraZ);
+            vMat.rotate(rotX,rotY,rotZ);
+//            mMat = new Matrix3D();
+
+            mvMat = new Matrix3D();
+            mvMat.concatenate(vMat);
+//            mvMat.concatenate(mMat);
+            mvMat.translate(p.x,p.y,p.z);
+            mvMat.rotate(p.rotX,p.rotY,p.rotZ);
+            mvMat.scale(0.03, 0.03, 0.03);
+
+            //Connect these to uniform vars that the shaders can use
+            mv_loc = gl.glGetUniformLocation(rendering_program, "mv_matrix");
+            proj_loc = gl.glGetUniformLocation(rendering_program, "proj_matrix");
+            gl.glUniformMatrix4fv(proj_loc, 1, false, pMat.getFloatValues(), 0);
+            gl.glUniformMatrix4fv(mv_loc, 1, false, mvMat.getFloatValues(), 0);
+
+            //Render Containing Cube
+            gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+            gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+            gl.glEnableVertexAttribArray(0);
+
+            gl.glEnable(GL_DEPTH_TEST);
+            gl.glDepthFunc(GL_LEQUAL);
+            gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            gl.glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 //
 ////        Render Pixels
 //

@@ -63,12 +63,11 @@ public class Code extends JFrame implements GLEventListener {
         pMat = perspective(60.0f, aspect, 0.1f, 1000.0f);
     }
     private Matrix3D perspective(float fovy, float aspect, float n, float f){
-     float q = 1.0f / (float) Math.tan(Math.toRadians(0.5f * fovy));
-     float A = q / aspect;
-     float B = (n + f) / (n- f);
-     float C = (2.0f * n * f) / (n-f);
-     Matrix3D r = new Matrix3D();
-     r.setElementAt(0,0,A);
+        float q = 1.0f / (float) Math.tan(Math.toRadians(0.5f * fovy));
+        float A = q / aspect;
+        float B = (n + f) / (n- f);
+        float C = (2.0f * n * f) / (n-f);
+        Matrix3D r = new Matrix3D();
         r.setElementAt(0,0,A);
         r.setElementAt(1,1,q);
         r.setElementAt(2,2,B);

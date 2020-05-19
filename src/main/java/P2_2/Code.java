@@ -40,7 +40,6 @@ public class Code extends JFrame implements GLEventListener {
     }
 
     public void dispose(GLAutoDrawable drawable) {
-
     }
 
     public void display(GLAutoDrawable drawable) {

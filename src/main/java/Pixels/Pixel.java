@@ -1,5 +1,7 @@
 package Pixels;
 
+import java.awt.event.KeyEvent;
+
 public class Pixel {
     float x;
     float y;
@@ -9,6 +11,14 @@ public class Pixel {
     float speedY = 0;
     float speedZ = 0;
 
+    float rotX = 0;
+    float rotY = 0;
+    float rotZ = 0;
+
+    float rotSpeedX = 0;
+    float rotSpeedY = 0;
+    float rotSpeedZ = 0;
+
     public Pixel(float x, float y, float z){
         this.x = x;
         this.y = y;
@@ -16,21 +26,14 @@ public class Pixel {
     }
 
 
-    public void setSpeedX(float speedX) {
-        this.speedX = speedX;
-    }
-
-    public void setSpeedY(float speedY) {
-        this.speedY = speedY;
-    }
-
-    public void setSpeedZ(float speedZ) {
-        this.speedZ = speedZ;
-    }
-
     public void update(){
-        x += speedX;
-        y += speedY;
-        z += speedZ;
+        if(!Game.keySet.get(KeyEvent.VK_SPACE)) {
+            x += speedX;
+            y += speedY;
+            z += speedZ;
+        }
+        rotX += rotSpeedX;
+        rotY += rotSpeedY;
+        rotZ += rotSpeedZ;
     }
 }

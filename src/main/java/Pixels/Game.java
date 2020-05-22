@@ -9,6 +9,7 @@ import graphicslib3D.Matrix3D;
 import graphicslib3D.Vector3D;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
@@ -41,7 +42,6 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
     ArrayList<Pixel> pixels = new ArrayList<Pixel>();
     int pixelCount = 1000;
     Random rand = new Random();
-    Point2D lastPoint = new Point2D.Float(0,0);
 //    Vector3D lastCalculatedVector = new Vector3D(0,0,0);
     float nearPlane = 0.1f;
     float farPlane = 1000f;
@@ -70,25 +70,10 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
     public void updatePixels(){
         for(Pixel p : pixels){
             p.update();
-            if(Math.abs(p.x) > 1) {
-                p.speedX = -p.speedX;
-                p.x += p.speedX;
-            }
-            if(Math.abs(p.y) > 1) {
-                p.speedY = -p.speedY;
-                p.y += p.speedY;
-            }
-            if(Math.abs(p.z) > 1) {
-                p.speedZ = -p.speedZ;
-                p.z += p.speedZ;
-            }
-            float dX = p.x - lastFX;
-            float dY = p.y - lastFY;
-            float dZ = p.z - lastFZ;
+
+
             if(!keySet.get(KeyEvent.VK_E) && clicked) {
-                p.speedX -= (((float)Math.random()-0.5f)*0.4f + 1) * dX / 200f;
-                p.speedY -= (((float)Math.random()-0.5f)*0.4f + 1) * dY / 200f;
-                p.speedZ -= (((float)Math.random()-0.5f)*0.4f + 1) * dZ / 200f;
+
             }
 
         }
@@ -126,7 +111,7 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
     public Game(){
         initializePixels();
         setTitle("Game Game Game! Now in 3D");
-        setSize(600,600);
+        setSize(1920,1080);
         myCanvas = new GLCanvas();
         myCanvas.addGLEventListener(this);
         FPSAnimator animator = new FPSAnimator(60);
@@ -161,10 +146,6 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
         r.setElementAt(3,3,0.0f);
         return r;
     }
-    private Vector3D inverseThePerspective(Vector3D v){
-        return v.mult(pMat.inverse());
-    }
-//    private Matrix3D getBig
     public void dispose(GLAutoDrawable drawable) { }
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {}
     public void display(GLAutoDrawable drawable){
@@ -217,12 +198,14 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
         GLU glu = GLU.createGLU();
         float[] objPos1 = new float[3];
         float[] objPos2 = new float[3];
-        glu.gluUnProject((float)lastPoint.getX(),(float)lastPoint.getY(),0.1f,
+        float mouseX = MouseInfo.getPointerInfo().getLocation().getLocation().x - myCanvas.getX() - myCanvas.getParent().getX();
+        float mouseY = MouseInfo.getPointerInfo().getLocation().getLocation().y - myCanvas.getY() - myCanvas.getParent().getY() - 53;
+        glu.gluUnProject(mouseX,mouseY,0.1f,
                 new Matrix3D().getFloatValues(),0,
                 pMat.getFloatValues(),0,
                 viewPort,0,
                 objPos1,0);
-        glu.gluUnProject((float)lastPoint.getX(),(float)lastPoint.getY(),1.0f,
+        glu.gluUnProject(mouseX,mouseY,1.0f,
                 new Matrix3D().getFloatValues(),0,
                 pMat.getFloatValues(),0,
                 viewPort,0,
@@ -251,7 +234,7 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
 //            mMat = new Matrix3D();
 
 //            mvMat.concatenate(mMat);
-            vMat.translate(p.x,p.y,p.z);
+            vMat.translate(p.getX(),p.getY(),p.getZ());
             vMat.rotate(p.rotX,p.rotY,p.rotZ);
             vMat.scale(0.015, 0.015, 0.015);
 
@@ -384,10 +367,10 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
 
     @Override
     public void mousePressed(java.awt.event.MouseEvent e) {
-        Point2D normalizedPoint = normalizePixelPoint(e.getPoint());
-        lastPoint = normalizedPoint;
+//        Point2D normalizedPoint = normalizePixelPoint(e.getPoint());
+//        lastPoint = normalizedPoint;
         clicked = true;
-        System.out.println(normalizedPoint);
+//        System.out.println(normalizedPoint);
 //        lastCalculatedVector = inverseThePerspective(new Vector3D(normalizedPoint.getX(),normalizedPoint.getY(), nearPlane));
 //        System.out.println(lastCalculatedVector);
 //        System.out.println(normalizedPoint);

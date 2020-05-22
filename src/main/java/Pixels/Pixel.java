@@ -31,9 +31,9 @@ public class Pixel {
             x += speedX;
             y += speedY;
             z += speedZ;
-            speedX -= speedX / 50f;
-            speedY -= speedY / 50f;
-            speedZ -= speedZ / 50f;
+            speedX -= speedX / 70f;
+            speedY -= speedY / 70f;
+            speedZ -= speedZ / 70f;
         }
 
 

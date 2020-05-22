@@ -3,7 +3,6 @@ package Pixels;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.FPSAnimator;
 import graphicslib3D.Matrix3D;
@@ -16,9 +15,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
-import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.*;
 
 import static com.jogamp.opengl.GL.*;
@@ -42,7 +39,7 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
     private Matrix3D pMat;
     public static BitSet keySet = new BitSet(256);
     ArrayList<Pixel> pixels = new ArrayList<Pixel>();
-    int pixelCount = 10000;
+    int pixelCount = 1000;
     Random rand = new Random();
     Point2D lastPoint = new Point2D.Float(0,0);
 //    Vector3D lastCalculatedVector = new Vector3D(0,0,0);
@@ -89,9 +86,9 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
             float dY = p.y - lastFY;
             float dZ = p.z - lastFZ;
             if(!keySet.get(KeyEvent.VK_E) && clicked) {
-                p.speedX -= dX / 100f;
-                p.speedY -= dY / 100f;
-                p.speedZ -= dZ / 100f;
+                p.speedX -= (((float)Math.random()-0.5f)*0.4f + 1) * dX / 200f;
+                p.speedY -= (((float)Math.random()-0.5f)*0.4f + 1) * dY / 200f;
+                p.speedZ -= (((float)Math.random()-0.5f)*0.4f + 1) * dZ / 200f;
             }
 
         }
@@ -271,8 +268,8 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
 
             gl.glEnable(GL_DEPTH_TEST);
             gl.glDepthFunc(GL_LEQUAL);
-//            gl.glDrawArrays(GL_TRIANGLES, 0, 36);
-            gl.glDrawArrays(GL_POINTS, 0, 1);
+            gl.glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
+//            gl.glDrawArrays(GL_POINTS, 0, 1);
         }
     }
 

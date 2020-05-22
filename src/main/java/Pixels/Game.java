@@ -3,40 +3,56 @@ package Pixels;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
+import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.FPSAnimator;
-import graphicslib3D.GLSLUtils;
 import graphicslib3D.Matrix3D;
+import graphicslib3D.Vector3D;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.*;
 
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES2.GL_COMPILE_STATUS;
+import static com.jogamp.opengl.GL2GL3.GL_FILL;
 import static com.jogamp.opengl.GL2GL3.GL_LINE;
 
 
 //The Frame is the "window" that you see and click on
 //The GLCanvas myCanvas is a component that is placed in the window, and as there is nothing else in the Frame, it fills the entire view
 //Alot of th integer variables in this are pseudo-pointers for use with the native OpenGL code which is written in C, and only works with points.
-public class Game extends JFrame implements GLEventListener, KeyListener {
+public class Game extends JFrame implements GLEventListener, KeyListener, MouseListener {
     private GLCanvas myCanvas;
     private int rendering_program;
     private int vao[] = new int[1];
     private int vbo[] = new int[2];
-    private float cameraX, cameraY, cameraZ;
-    private float cubeLocX, cubeLocY, cubeLocZ;
+    //Translations applied to objects, relative to camera. Positive values will push objects 'away' from camera
+    //Not using the x and the y for now, maybe testing. set to 0.
+    private float unusedX, unusedY, zDistFromCamera;
     private float rotX, rotY, rotZ;
-    private GLSLUtils util = new GLSLUtils();
     private Matrix3D pMat;
     public static BitSet keySet = new BitSet(256);
     ArrayList<Pixel> pixels = new ArrayList<Pixel>();
     int pixelCount = 10000;
     Random rand = new Random();
+    Point2D lastPoint = new Point2D.Float(0,0);
+//    Vector3D lastCalculatedVector = new Vector3D(0,0,0);
+    float nearPlane = 0.1f;
+    float farPlane = 1000f;
+    float fov = 60.0f;
+    float lastFX = 0.0f;
+    float lastFY = 0.0f;
+    float lastFZ = 0.0f;
+    boolean clicked = false;
 
     //The 'entry' point for this code
     public static void main(String[] args) {
@@ -45,7 +61,7 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
         new Thread(() -> {
             while(true) {
                 try {
-                    Thread.sleep(8);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -69,11 +85,19 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
                 p.speedZ = -p.speedZ;
                 p.z += p.speedZ;
             }
+            float dX = p.x - lastFX;
+            float dY = p.y - lastFY;
+            float dZ = p.z - lastFZ;
+            if(!keySet.get(KeyEvent.VK_E) && clicked) {
+                p.speedX -= dX / 100f;
+                p.speedY -= dY / 100f;
+                p.speedZ -= dZ / 100f;
+            }
+
         }
     }
-    public void pull(float x, float y, float z, float force){
 
-    }
+
     public void initializePixels(){
         for(int i = 0; i < pixelCount; i++){
             Pixel p = new Pixel(
@@ -81,15 +105,14 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
                     rand.nextFloat()*2 - 1,
                     rand.nextFloat()*2 - 1
             );
-            p.speedX = (rand.nextFloat()*2 - 1) / 200f;
-            p.speedY = (rand.nextFloat()*2 - 1) / 200f;
-            p.speedZ = (rand.nextFloat()*2 - 1) / 200f;
+//            p.speedX = (rand.nextFloat()*2 - 1) / 200f;
+//            p.speedY = (rand.nextFloat()*2 - 1) / 200f;
+//            p.speedZ = (rand.nextFloat()*2 - 1) / 200f;
 
             p.rotSpeedX = (rand.nextFloat()*2 - 1);
             p.rotSpeedY = (rand.nextFloat()*2 - 1);
             p.rotSpeedZ = (rand.nextFloat()*2 - 1);
 
-            System.out.println(p.x);
             pixels.add(p);
         }
     }
@@ -114,6 +137,7 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
         animator.start();
         this.add(myCanvas);
         myCanvas.addKeyListener(this);
+        myCanvas.addMouseListener(this);
         setVisible(true);
         initializePixels();
     }
@@ -121,11 +145,10 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
     public void init(GLAutoDrawable drawable){
         rendering_program = createShaderProgram();
         setupVertices();
-        cameraX = 0.0f; cameraY = 0.0f; cameraZ = 3.0f;
-        cubeLocX = 0.0f; cubeLocY = 0.0f; cubeLocZ = 0.0f;
+        unusedX = 0.0f; unusedY = 0.0f; zDistFromCamera = 3.0f;
         rotX = 0.0f; rotY = 0.0f; rotZ = 0.0f;
         float aspect = (float)myCanvas.getWidth()/(float)myCanvas.getHeight();
-        pMat = perspective(60.0f, aspect, 0.1f, 1000.0f);
+        pMat = perspective(fov, aspect, nearPlane, farPlane);
     }
     private Matrix3D perspective(float fovy, float aspect, float n, float f){
         float q = 1.0f / (float) Math.tan(Math.toRadians(0.5f * fovy));
@@ -134,7 +157,6 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
         float C = (2.0f * n * f) / (n-f);
         Matrix3D r = new Matrix3D();
         r.setElementAt(0,0,A);
-        r.setElementAt(0,0,A);
         r.setElementAt(1,1,q);
         r.setElementAt(2,2,B);
         r.setElementAt(3,2,-1.0f);
@@ -142,6 +164,10 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
         r.setElementAt(3,3,0.0f);
         return r;
     }
+    private Vector3D inverseThePerspective(Vector3D v){
+        return v.mult(pMat.inverse());
+    }
+//    private Matrix3D getBig
     public void dispose(GLAutoDrawable drawable) { }
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {}
     public void display(GLAutoDrawable drawable){
@@ -157,18 +183,16 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
 
         //Camera and box translations. Are both really necessary...
         Matrix3D vMat = new Matrix3D();
-        vMat.translate(-cameraX,-cameraY,-cameraZ);
+        vMat.translate(-unusedX,-unusedY,-zDistFromCamera);
         vMat.rotate(rotX, rotY, rotZ);
 
         //Concat matrices
-        Matrix3D mvMat = new Matrix3D();
-        mvMat.concatenate(vMat);
 
         //Connect these to uniform vars that the shaders can use
         int mv_loc = gl.glGetUniformLocation(rendering_program, "mv_matrix");
         int proj_loc = gl.glGetUniformLocation(rendering_program, "proj_matrix");
         gl.glUniformMatrix4fv(proj_loc, 1, false, pMat.getFloatValues(), 0);
-        gl.glUniformMatrix4fv(mv_loc, 1, false, mvMat.getFloatValues(), 0);
+        gl.glUniformMatrix4fv(mv_loc, 1, false, vMat.getFloatValues(), 0);
 
         //Render Containing Cube
         gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -177,29 +201,68 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
 
         gl.glEnable(GL_DEPTH_TEST);
         gl.glDepthFunc(GL_LEQUAL);
-        gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Set wireframe
         gl.glDrawArrays(GL_TRIANGLES, 0 ,36);
-
-
+        gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //Disable Wireframe
         //PART 2 ==========================================
+//        drawMiniCubes(gl);
+        //END PART 2 ======================================
+
+
+//        glu.gluUnProject();
+
+        //TEMP REMOVE ME =============================================
+
+//        System.out.println(pMat.toString());
+//        IntBuffer viewportBuff = Buffers.newDirectIntBuffer(4);
+        int[] viewPort = new int[4];
+        gl.glGetIntegerv(GL_VIEWPORT, viewPort,0);
+        GLU glu = GLU.createGLU();
+        float[] objPos1 = new float[3];
+        float[] objPos2 = new float[3];
+        glu.gluUnProject((float)lastPoint.getX(),(float)lastPoint.getY(),0.1f,
+                new Matrix3D().getFloatValues(),0,
+                pMat.getFloatValues(),0,
+                viewPort,0,
+                objPos1,0);
+        glu.gluUnProject((float)lastPoint.getX(),(float)lastPoint.getY(),1.0f,
+                new Matrix3D().getFloatValues(),0,
+                pMat.getFloatValues(),0,
+                viewPort,0,
+                objPos2,0);
+
+        vMat = new Matrix3D();
+        lastFX = (float)(objPos2[0]/objPos2[2] * -zDistFromCamera * Math.cos(Math.toRadians(rotY)));
+        lastFY = objPos2[1]/objPos2[2] * zDistFromCamera;
+        lastFZ = (float)(objPos2[0]/objPos2[2] * -zDistFromCamera * Math.sin(Math.toRadians(rotY)));
+
+//        System.out.println(objPos2[0]/objPos2[2] * -zDistFromCamera * Math.sin(Math.toRadians(rotY)));
+        vMat.translate(0,0,-zDistFromCamera);
+        vMat.rotate(rotX, rotY, rotZ);
+//        vMat.translate(objPos2[0]/objPos2[2] * -zDistFromCamera * Math.cos(Math.toRadians(rotY)),
+//                objPos2[1]/objPos2[2] * zDistFromCamera,
+//                objPos2[0]/objPos2[2] * -zDistFromCamera * Math.sin(Math.toRadians(rotY)));
+//        vMat.translate(lastCalculatedVector.getX(), lastCalculatedVector.getY(),0);
+        drawMiniCubes(gl);
+    }
+
+    public void drawMiniCubes(GL4 gl){
         for(Pixel p : pixels) {
-            vMat = new Matrix3D();
-            vMat.translate(-cameraX, -cameraY, -cameraZ);
+            Matrix3D vMat = new Matrix3D();
+            vMat.translate(-unusedX, -unusedY, -zDistFromCamera);
             vMat.rotate(rotX,rotY,rotZ);
 //            mMat = new Matrix3D();
 
-            mvMat = new Matrix3D();
-            mvMat.concatenate(vMat);
 //            mvMat.concatenate(mMat);
-            mvMat.translate(p.x,p.y,p.z);
-            mvMat.rotate(p.rotX,p.rotY,p.rotZ);
-            mvMat.scale(0.03, 0.03, 0.03);
+            vMat.translate(p.x,p.y,p.z);
+            vMat.rotate(p.rotX,p.rotY,p.rotZ);
+            vMat.scale(0.015, 0.015, 0.015);
 
             //Connect these to uniform vars that the shaders can use
-            mv_loc = gl.glGetUniformLocation(rendering_program, "mv_matrix");
-            proj_loc = gl.glGetUniformLocation(rendering_program, "proj_matrix");
+            int mv_loc = gl.glGetUniformLocation(rendering_program, "mv_matrix");
+            int proj_loc = gl.glGetUniformLocation(rendering_program, "proj_matrix");
             gl.glUniformMatrix4fv(proj_loc, 1, false, pMat.getFloatValues(), 0);
-            gl.glUniformMatrix4fv(mv_loc, 1, false, mvMat.getFloatValues(), 0);
+            gl.glUniformMatrix4fv(mv_loc, 1, false, vMat.getFloatValues(), 0);
 
             //Render Containing Cube
             gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -208,26 +271,11 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
 
             gl.glEnable(GL_DEPTH_TEST);
             gl.glDepthFunc(GL_LEQUAL);
-            gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            gl.glDrawArrays(GL_TRIANGLES, 0, 36);
+//            gl.glDrawArrays(GL_TRIANGLES, 0, 36);
+            gl.glDrawArrays(GL_POINTS, 0, 1);
         }
-//
-////        Render Pixels
-//
-//        //Connect these to uniform vars that the shaders can use
-//        gl.glUniformMatrix4fv(proj_loc, 1, false, pMat.getFloatValues(), 0);
-//        gl.glUniformMatrix4fv(mv_loc, 1, false, mvMat.getFloatValues(), 0);
-//
-//        gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-//        gl.glVertexAttribPointer(0,3,GL_FLOAT,false,0,0);
-//        gl.glEnableVertexAttribArray(0);
-//
-//        gl.glEnable(GL_DEPTH_TEST);
-//        gl.glDepthFunc(GL_LEQUAL);
-////        gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//        gl.glPointSize(30.0f);
-//        gl.glDrawArrays(GL_POINTS, 0 ,36);
     }
+
 
     public void setupVertices(){
         GL4 gl = (GL4) GLContext.getCurrentGL();
@@ -307,6 +355,13 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
         return program;
     }
 
+    //Takes a click point and transforms from pixel location to  domain of [-1,+1]
+    private Point2D.Float normalizePixelPoint(Point2D screenPoint){
+//        float x = (float)(screenPoint.getX()/myCanvas.getWidth() * 2) - 1;
+//        float y = -((float)(screenPoint.getY()/myCanvas.getHeight() * 2) - 1); //adjust for y being flipped in swing!
+        return new Point2D.Float((float)screenPoint.getX(),(float)screenPoint.getY());
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
     }
@@ -314,12 +369,47 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         keySet.set(e.getKeyCode(),true);
+        if(e.getKeyCode() == KeyEvent.VK_R){
+            rotY = 0;
+        }
 
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
         keySet.set(e.getKeyCode(),false);
+    }
+
+    @Override
+    public void mouseClicked(java.awt.event.MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(java.awt.event.MouseEvent e) {
+        Point2D normalizedPoint = normalizePixelPoint(e.getPoint());
+        lastPoint = normalizedPoint;
+        clicked = true;
+        System.out.println(normalizedPoint);
+//        lastCalculatedVector = inverseThePerspective(new Vector3D(normalizedPoint.getX(),normalizedPoint.getY(), nearPlane));
+//        System.out.println(lastCalculatedVector);
+//        System.out.println(normalizedPoint);
+//        System.out.println();
+    }
+
+    @Override
+    public void mouseReleased(java.awt.event.MouseEvent e) {
+        clicked = false;
+    }
+
+    @Override
+    public void mouseEntered(java.awt.event.MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(java.awt.event.MouseEvent e) {
+
     }
 }
 

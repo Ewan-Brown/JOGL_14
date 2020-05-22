@@ -73,7 +73,7 @@ public class Game extends JFrame implements GLEventListener, KeyListener, MouseL
 
 
             if(!keySet.get(KeyEvent.VK_E) && clicked) {
-
+                p.applyPull(lastFX,lastFY,lastFZ);
             }
 
         }

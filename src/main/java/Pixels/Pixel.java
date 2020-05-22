@@ -9,17 +9,14 @@ public class Pixel {
 
     public float getX() {
         return x;
-//        return x + (float)Math.sin(x)/20f;
     }
 
     public float getY() {
         return y;
-//        return y + (float)Math.sin(y)/20f;
     }
 
     public float getZ() {
         return z;
-//        return z + (float)Math.sin(z)/20f;
     }
 
     float speedX = 0;
@@ -40,7 +37,7 @@ public class Pixel {
         this.z = z;
     }
 
-    public void applyPull(float fX, float fY, float fZ, float force){
+    public void applyPull(float fX, float fY, float fZ){
         float dX = x - fX;
         float dY = y - fY;
         float dZ = z - fZ;
